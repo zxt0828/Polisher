@@ -1,28 +1,30 @@
+English | [中文](README.zh-CN.md)
+
 # Polisher
 
-Polisher 是一个 AI 简历优化助手，帮助求职者根据具体的职位描述（JD）快速调整简历，提高通过 ATS（申请人跟踪系统）筛选的概率，同时给出通用的简历修改建议。
+Polisher is an AI-powered resume optimization assistant that helps job seekers quickly tailor their resumes to a specific job description (JD), improving the odds of passing ATS (Applicant Tracking System) screening, while also providing general resume improvement suggestions.
 
-## 解决的问题
+## Problem
 
-- 每投递一个岗位都手动调整简历措辞、关键词很耗时，容易遗漏JD里的关键要求
-- 很多简历因为关键词不匹配、格式不规范，在ATS自动筛选阶段就被淘汰，根本到不了HR手上
-- 缺少专业、客观的第三方视角来评估简历的表达是否有效（比如动词强度、量化程度、结构是否清晰）
+- Manually adjusting resume wording and keywords for every job application is time-consuming, and it's easy to miss key requirements in the JD
+- Many resumes get filtered out at the ATS stage due to keyword mismatches or non-standard formatting, never reaching a human recruiter
+- Job seekers often lack an objective, professional perspective on whether their resume's writing is effective (e.g. strength of action verbs, use of quantified results, clarity of structure)
 
-## 核心功能
+## Core Features
 
-### 1. JD定向优化
-用户提供简历和目标职位的JD，Polisher 分析两者的匹配度，识别JD中的关键词、技能要求，并据此调整简历的措辞和重点，使其更贴合该职位、更容易通过ATS筛选。
+### 1. JD-targeted optimization
+Given a resume and a target job's JD, Polisher analyzes the match between the two, identifies key terms and skill requirements from the JD, and adjusts the resume's wording and emphasis accordingly to better align with the role and pass ATS screening.
 
-### 2. 简历修改建议
-不针对特定JD，从通用简历写作的角度给出改进建议，例如：
-- 经历描述是否量化、是否使用有力的动作动词
-- 结构和信息层次是否清晰
-- 是否存在冗余或表达模糊的内容
+### 2. Resume improvement suggestions
+Independent of any specific JD, Polisher provides general resume writing feedback, such as:
+- Whether experience bullets are quantified and use strong action verbs
+- Whether the structure and information hierarchy are clear
+- Whether there is redundant or vague wording
 
-## 目标用户
+## Target Users
 
-正在求职、需要针对不同岗位反复调整简历的求职者。
+Job seekers who are actively applying and need to repeatedly tailor their resume for different roles.
 
-## 当前状态
+## Status
 
-项目处于early development阶段，第一个MVP聚焦于"JD定向优化"功能。
+The project is in early development. The first MVP focuses on the "JD-targeted optimization" feature.
