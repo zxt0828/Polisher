@@ -4,8 +4,129 @@ from pydantic import BaseModel, Field
 
 
 class Keywords(BaseModel):
-    """从职位描述(JD)中提取出的关键词列表。"""
+    """Keywords extracted from a job description (JD)."""
 
     keywords: list[str] = Field(
-        description="从JD中提取的关键技能、工具、技术栈和硬性资质关键词，不包含空泛的软素质描述。"
+        description="Key technical skills, tools, technologies, and hard qualification "
+        "keywords extracted from the JD. Excludes vague soft-skill phrases."
+    )
+
+
+class Contact(BaseModel):
+    """Contact info, extracted verbatim from the resume, never rewritten or fabricated."""
+
+    name: str = Field(default="", description="Full name. Empty string if not found.")
+    email: str = Field(default="", description="Email address. Empty string if not found.")
+    phone: str = Field(default="", description="Phone number. Empty string if not found.")
+    city: str = Field(default="", description="City. Empty string if not found.")
+    github: str = Field(
+        default="", description="GitHub URL or username. Empty string if not found."
+    )
+    linkedin: str = Field(
+        default="", description="LinkedIn URL or username. Empty string if not found."
+    )
+
+
+class SkillCategory(BaseModel):
+    """A skill category and its items."""
+
+    category: str = Field(description="Skill category name, e.g. 'Backend', 'Frontend', 'DevOps'.")
+    items: list[str] = Field(
+        default_factory=list,
+        description="Skills in this category, including skills already present in the "
+        "resume plus skills appended from the keyword list.",
+    )
+
+
+class ExperienceItem(BaseModel):
+    """A single work experience entry."""
+
+    company: str = Field(default="", description="Company name.")
+    title: str = Field(default="", description="Job title.")
+    location: str = Field(
+        default="",
+        description="Location of this experience, extracted verbatim, never rewritten "
+        "or fabricated. Empty string if not stated in the resume.",
+    )
+    start_date: str = Field(default="", description="Start date.")
+    end_date: str = Field(
+        default="", description="End date; keep original wording such as 'Present' if still current."
+    )
+    bullets: list[str] = Field(
+        default_factory=list,
+        description="Bullet points for this experience. Only rewrite existing wording, "
+        "never add experience the user doesn't have.",
+    )
+
+
+class ProjectItem(BaseModel):
+    """A single project entry."""
+
+    name: str = Field(default="", description="Project name.")
+    tech_stack: list[str] = Field(
+        default_factory=list,
+        description="Technologies used in this project, e.g. ['React', 'Node.js', "
+        "'PostgreSQL']. Source rule is strict: every entry must come from this "
+        "project's own real content in the resume — either a tech stack already "
+        "listed for this project, or a technology actually mentioned in this "
+        "project's bullets. Never add anything from the keyword list, and never "
+        "add a technology this project did not actually use. If the resume gives "
+        "no extractable tech info for this project, leave this as an empty list "
+        "rather than inventing one.",
+    )
+    bullets: list[str] = Field(
+        default_factory=list,
+        description="Bullet points for this project. Only rewrite existing wording, "
+        "never add a project the user doesn't have.",
+    )
+
+
+class EducationItem(BaseModel):
+    """A single education entry, extracted verbatim, never rewritten."""
+
+    school: str = Field(default="", description="School name.")
+    degree: str = Field(default="", description="Degree, e.g. Bachelor, Master.")
+    major: str = Field(default="", description="Major / field of study.")
+    dates: str = Field(default="", description="Start and end dates.")
+
+
+class CertificationItem(BaseModel):
+    """A single certification entry, extracted verbatim, never rewritten."""
+
+    name: str = Field(default="", description="Certification name.")
+    issuer: str = Field(default="", description="Issuing organization.")
+    date: str = Field(default="", description="Date obtained / issued.")
+
+
+class TailoredResume(BaseModel):
+    """Structured, tailored resume generated from the user's resume content and keywords."""
+
+    contact: Contact = Field(
+        default_factory=Contact,
+        description="Contact info, extracted verbatim, never rewritten or fabricated.",
+    )
+    summary: str = Field(
+        default="",
+        description="A short summary generated from the user's experience and skills. "
+        "Does not restate the specific details already covered in experience/projects.",
+    )
+    skills: list[SkillCategory] = Field(
+        default_factory=list,
+        description="Categorized skills. Additive only: keep every existing skill, and "
+        "append missing skills sourced from the keyword list.",
+    )
+    experience: list[ExperienceItem] = Field(
+        default_factory=list,
+        description="Work experience list. Only rewrite existing wording, never add experience.",
+    )
+    projects: list[ProjectItem] = Field(
+        default_factory=list,
+        description="Project list. Only rewrite existing wording, never add a project.",
+    )
+    education: list[EducationItem] = Field(
+        default_factory=list, description="Education list, extracted verbatim, never rewritten."
+    )
+    certifications: list[CertificationItem] = Field(
+        default_factory=list,
+        description="Certification list, extracted verbatim, never rewritten; empty if none.",
     )

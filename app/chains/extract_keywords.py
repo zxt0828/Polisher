@@ -9,8 +9,9 @@ from app.schemas import Keywords
 model = ChatAnthropic(
     model=ANTHROPIC_MODEL,
     api_key=ANTHROPIC_API_KEY,
-    #temperature=0,#模型输出的随机性发散性，0-1之间，0表示最确定的输出，1表示最随机的输出，像提取关键词设计0就好
+    # temperature omitted: passing it causes a 400 error on this model.
+    #temperature=0.0, which means how much randomness to introduce into the model's output. A temperature of 0.0 means the model will always choose the most likely next token, resulting in deterministic output.
 ).with_structured_output(Keywords)
 
-#LCEL管道，把prompt和模型组合成一个链，输入JD文本，输出关键词列表
+# LCEL pipe: prompt -> model. Input is JD text, output is a Keywords object.
 extract_keywords_chain = EXTRACT_KEYWORDS_PROMPT | model
