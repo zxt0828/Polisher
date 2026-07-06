@@ -87,6 +87,12 @@ class EducationItem(BaseModel):
     school: str = Field(default="", description="School name.")
     degree: str = Field(default="", description="Degree, e.g. Bachelor, Master.")
     major: str = Field(default="", description="Major / field of study.")
+    gpa: str = Field(
+        default="",
+        description="GPA, extracted verbatim from the resume, never rewritten or "
+        "fabricated. Kept as a string since resumes format it inconsistently "
+        "(e.g. '3.8', '3.8/4.0', '3.8/4.3'). Empty string if not stated.",
+    )
     dates: str = Field(default="", description="Start and end dates.")
 
 

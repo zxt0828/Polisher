@@ -41,8 +41,11 @@ TAILOR_PROMPT = ChatPromptTemplate.from_messages(
             "and never borrow a technology from another project or from the keywords. If "
             "a project has no extractable tech info, leave its tech_stack as an empty list.\n\n"
             "6. education, certifications — Copy verbatim, only structuring the data into "
-            "the schema, never rewriting content. If the resume has no certifications (or "
-            "no education), return an empty list for that section — never invent one.\n\n"
+            "the schema, never rewriting content. This includes fields like gpa: copy it "
+            "exactly as written (e.g. '3.8', '3.8/4.0', '3.8/4.3') and leave it as an "
+            "empty string if the resume does not state one — never calculate, round, or "
+            "invent a GPA. If the resume has no certifications (or no education), return "
+            "an empty list for that section — never invent one.\n\n"
             "General rule: when a section or field has no source content, return an empty "
             "string or empty list. Never fabricate placeholder, example, or made-up data "
             "to fill a gap.",

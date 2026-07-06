@@ -31,6 +31,7 @@ EDUCATION
 
 Northeastern University
 Bachelor of Science, Computer Science
+GPA: 3.8/4.0
 2018 - 2022
 
 SKILLS
