@@ -1,16 +1,17 @@
-"""FastAPI routes: /api/keywords/extract, /api/resume/tailor.
+"""FastAPI routes: /api/keywords/extract, /api/resume/tailor, /api/resume/export.
 
 Routing layer only: parses the request, calls into services/chains, and
 shapes the response. No business logic lives here.
 """
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel
 
 from app.chains.extract_keywords import extract_keywords_chain
 from app.chains.tailor import tailor_chain
 from app.schemas import Keywords, TailoredResume
 from app.services.pdf_parser import extract_text_from_pdf
+from app.services.pdf_renderer import build_export_filename, render_resume_pdf
 
 router = APIRouter(prefix="/api")
 
@@ -49,3 +50,17 @@ def tailor_resume(
     # placeholder names exactly, which is why the extracted text is passed
     # under "resume_text" rather than "resume".
     return tailor_chain.invoke({"resume_text": resume_text, "keywords": keywords})
+
+
+@router.post("/resume/export")
+def export_resume(resume: TailoredResume) -> Response:
+    # No response_model: this endpoint returns a raw PDF byte stream, not a
+    # JSON-serializable Pydantic model, so there's nothing for response_model
+    # to validate against.
+    pdf_bytes = render_resume_pdf(resume)
+    filename = build_export_filename(resume)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

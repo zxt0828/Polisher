@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Resume</title>
+<style>
+  @page {
+    size: Letter;
+    margin: 0.5in;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.35;
+    color: #000;
+    margin: 0;
+  }
+
+  .contact-name {
+    text-align: center;
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  .contact-line {
+    text-align: center;
+    font-size: 9.5pt;
+    margin-bottom: 10px;
+  }
+
+  .section {
+    break-inside: avoid;
+    margin-bottom: 8px;
+  }
+
+  .section-heading {
+    font-size: 11pt;
+    font-weight: bold;
+    border-bottom: 1px solid #000;
+    padding-bottom: 2px;
+    margin: 0 0 4px 0;
+  }
+
+  .summary-text {
+    margin: 0;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .entry {
+    break-inside: avoid;
+    margin-bottom: 6px;
+  }
+
+  .entry-title {
+    font-weight: bold;
+  }
+
+  .entry-subtitle {
+    font-style: italic;
+  }
+
+  ul.bullets {
+    list-style: none;
+    margin: 2px 0 0 0;
+    padding: 0;
+  }
+
+  ul.bullets li {
+    display: flex;
+    margin-bottom: 2px;
+  }
+
+  ul.bullets li .bullet-mark {
+    flex: 0 0 14px;
+  }
+
+  ul.bullets li .bullet-text {
+    flex: 1 1 auto;
+    overflow-wrap: break-word;
+  }
+
+  .tech-stack {
+    font-style: italic;
+    margin: 2px 0 0 0;
+  }
+
+  .skills-line {
+    margin-bottom: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="contact-name">{{ contact_name }}</div>
+  {% if contact_line %}
+  <div class="contact-line">{{ contact_line }}</div>
+  {% endif %}
+
+  {% if summary %}
+  <section class="section">
+    <h2 class="section-heading">Summary</h2>
+    <p class="summary-text">{{ summary }}</p>
+  </section>
+  {% endif %}
+
+  {% if education %}
+  <section class="section">
+    <h2 class="section-heading">Education</h2>
+    {% for edu in education %}
+    <div class="entry row">
+      <span class="entry-title">{{ edu.school
+        }}{% if edu.degree_major %}, {{ edu.degree_major }}{% endif
+        %}{% if edu.gpa %}, GPA: <strong>{{ edu.gpa }}</strong>{% endif %}</span>
+      {% if edu.dates %}<span>{{ edu.dates }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if experience %}
+  <section class="section">
+    <h2 class="section-heading">Experience</h2>
+    {% for exp in experience %}
+    <div class="entry">
+      <div class="row">
+        <span class="entry-title">{{ exp.company }}</span>
+        {% if exp.dates %}<span>{{ exp.dates }}</span>{% endif %}
+      </div>
+      {% if exp.title or exp.location %}
+      <div class="row entry-subtitle">
+        <span>{{ exp.title }}</span>
+        <span>{{ exp.location }}</span>
+      </div>
+      {% endif %}
+      {% if exp.bullets %}
+      <ul class="bullets">
+        {% for bullet in exp.bullets %}
+        <li><span class="bullet-mark">&#9679;</span><span class="bullet-text">{{ bullet }}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if projects %}
+  <section class="section">
+    <h2 class="section-heading">Projects</h2>
+    {% for proj in projects %}
+    <div class="entry">
+      <div class="entry-title">{{ proj.name }}</div>
+      {% if proj.tech_stack %}
+      <div class="tech-stack">{{ proj.tech_stack|join(", ") }}</div>
+      {% endif %}
+      {% if proj.bullets %}
+      <ul class="bullets">
+        {% for bullet in proj.bullets %}
+        <li><span class="bullet-mark">&#9679;</span><span class="bullet-text">{{ bullet }}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if skills %}
+  <section class="section">
+    <h2 class="section-heading">Skills</h2>
+    {% for cat in skills %}
+    <div class="skills-line"><strong>{{ cat.category }}</strong>: {{ cat.entries|join(", ") }}</div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if certifications %}
+  <section class="section">
+    <h2 class="section-heading">Certifications</h2>
+    {% for cert in certifications %}
+    <div class="entry row">
+      <span class="entry-title">{{ cert.name }}{% if cert.issuer %} &mdash; {{ cert.issuer }}{% endif %}</span>
+      {% if cert.date %}<span>{{ cert.date }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+</body>
+</html>
