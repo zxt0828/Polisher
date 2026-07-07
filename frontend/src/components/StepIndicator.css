@@ -1,0 +1,86 @@
+.step-indicator ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.step-indicator__item {
+  position: relative;
+  padding-bottom: var(--space-6);
+}
+
+/* 圆圈之间的竖线：从这一项的圆圈底部连到下一项，最后一项不画 */
+.step-indicator__item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.step-indicator__item button {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+}
+
+.step-indicator__item.is-clickable button {
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.step-indicator__item.is-current button {
+  color: var(--color-text);
+  cursor: default;
+}
+
+.step-indicator__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+}
+
+.step-indicator__item.is-clickable .step-indicator__number {
+  border-color: var(--color-text-muted);
+}
+
+.step-indicator__item.is-current .step-indicator__number {
+  border-color: var(--color-accent);
+  border-width: 2px;
+  color: var(--color-accent);
+}
+
+.step-indicator__text {
+  display: flex;
+  flex-direction: column;
+  padding-top: 6px;
+}
+
+.step-indicator__label {
+  font-weight: 600;
+}
+
+.step-indicator__status {
+  font-size: 12px;
+  color: var(--color-accent);
+  margin-top: 2px;
+}

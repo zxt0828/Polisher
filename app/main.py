@@ -27,6 +27,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],  # 允许 GET/POST/PUT/DELETE 等所有常用 HTTP 方法
     allow_headers=["*"],  # 允许请求携带任意自定义 header（如 Content-Type、Authorization）
+    # 跨域场景下，浏览器 JS 默认只能读到一小撮「安全」响应头，Content-Disposition
+    # 不在其中。/api/resume/export 靠这个头告诉前端建议的下载文件名（如
+    # "Jane_Doe_Resume.pdf"），不显式 expose 出来的话前端读到的就是 null，
+    # 只能退化成一个通用文件名。
+    expose_headers=["Content-Disposition"],
 )
 
 # include_router 把 routes.py 里定义好的 APIRouter 挂载到这个 app 上。

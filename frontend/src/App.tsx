@@ -1,0 +1,108 @@
+import { useState } from 'react'
+import './App.css'
+import { StepIndicator } from './components/StepIndicator'
+import { JobKeywords } from './steps/JobKeywords/JobKeywords'
+import { ResumeUpload } from './steps/ResumeUpload/ResumeUpload'
+import { Results } from './steps/Results/Results'
+import type { TailoredResume } from './types/resume'
+import type { StepId } from './types/step'
+
+// 页面级大标题：小标签固定不变（整个向导流程的名字），大标题按当前步查表。
+// 第二、三步目前用的就是它们各自卡片里原来那句 <h2>，原样搬上来，不是新起的文案。
+const PAGE_KICKER = 'TAILOR RÉSUMÉ'
+
+const STEP_HEADINGS: Record<StepId, string> = {
+  keywords: 'What role are we tailoring for?',
+  resume: 'Step 2: Résumé',
+  results: 'Step 3: Results',
+}
+
+// 判断两组关键词内容是否一致（不管顺序）：用来决定重新走一遍第一步时，
+// 如果最终关键词集合其实没变，就不作废第二、三步已经算出来的结果——
+// 对应设计里「只是来回看、没改输入 → 什么都不作废」这条规则。
+function sameKeywordSet(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  const sortedA = [...a].sort()
+  const sortedB = [...b].sort()
+  return sortedA.every((word, index) => word === sortedB[index])
+}
+
+function App() {
+  const [currentStep, setCurrentStep] = useState<StepId>('keywords')
+  const [jdText, setJdText] = useState('')
+  const [keywords, setKeywords] = useState<string[]>([])
+  const [tailoredResume, setTailoredResume] = useState<TailoredResume | null>(null)
+
+  // 后端无状态，某一步有没有数据完全取决于前端这几个 state 是否已经填过。
+  // 指示器里能不能点回某一步，就看那一步是否已经产出过数据。
+  function isStepReachable(step: StepId): boolean {
+    if (step === 'keywords') {
+      return true
+    }
+    if (step === 'resume') {
+      return keywords.length > 0
+    }
+    return tailoredResume !== null
+  }
+
+  function handleStepSelect(step: StepId) {
+    if (step === currentStep || !isStepReachable(step)) {
+      return
+    }
+    setCurrentStep(step)
+  }
+
+  // 第一步确认关键词：集合变了（重新提取过、或删剩的词不一样了）就说明
+  // 第二、三步是基于旧关键词做出来的，跟着作废；集合没变就什么都不清。
+  function handleKeywordsConfirmed(finalKeywords: string[]) {
+    const changed = !sameKeywordSet(finalKeywords, keywords)
+    setKeywords(finalKeywords)
+    if (changed) {
+      setTailoredResume(null)
+    }
+    setCurrentStep('resume')
+  }
+
+  function handleResumeTailored(resume: TailoredResume) {
+    setTailoredResume(resume)
+    setCurrentStep('results')
+  }
+
+  return (
+    <div className="app-layout">
+      <header className="page-header">
+        <span className="eyebrow">{PAGE_KICKER}</span>
+        <h1>{STEP_HEADINGS[currentStep]}</h1>
+      </header>
+      <div className="app-columns">
+        <div className="app-sidebar">
+          <StepIndicator
+            currentStep={currentStep}
+            isReachable={isStepReachable}
+            onSelect={handleStepSelect}
+          />
+        </div>
+        <main className="app-content">
+          <div className="content-card">
+            {currentStep === 'keywords' && (
+              <JobKeywords
+                jdText={jdText}
+                onJdTextChange={setJdText}
+                initialKeywords={keywords}
+                onNext={handleKeywordsConfirmed}
+              />
+            )}
+            {currentStep === 'resume' && (
+              <ResumeUpload keywords={keywords} onNext={handleResumeTailored} />
+            )}
+            {currentStep === 'results' && tailoredResume && <Results resume={tailoredResume} />}
+          </div>
+        </main>
+      </div>
+    </div>
+  )
+}
+
+export default App

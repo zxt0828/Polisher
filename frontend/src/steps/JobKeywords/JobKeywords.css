@@ -1,0 +1,32 @@
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font: inherit;
+  color: var(--color-text);
+  resize: vertical;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* 包一层而不是直接改共享的 .keyword-chips：那个类在 ResumeUpload 里也用，
+   直接在这个文件里加 margin 会漏到那边去（CSS 没有文件级作用域）。 */
+.keyword-chips-wrap {
+  margin-top: var(--space-5);
+}
+
+.step-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.step-actions__hint {
+  font-size: 13px;
+  color: var(--color-text-faint);
+}

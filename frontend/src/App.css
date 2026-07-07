@@ -1,0 +1,33 @@
+.app-layout {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5);
+}
+
+.page-header {
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-columns {
+  display: flex;
+  gap: var(--space-7);
+}
+
+.app-sidebar {
+  flex: none;
+  width: 200px;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.content-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
+}

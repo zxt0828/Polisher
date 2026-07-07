@@ -1,0 +1,78 @@
+@import './styles/tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+#root {
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 小标签：全大写 + 疏字距，用在每一步页面顶部的分类标签上 */
+.eyebrow {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* 表单字段分组：多个 step 组件共用（JD 文本框、简历上传、关键词展示都是
+   一个「小标题 + 控件」的字段块），提到这里避免每个 step 各写一份。 */
+.field {
+  margin-bottom: var(--space-5);
+}
+
+.field-heading {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.field-error {
+  color: #a83a3a;
+  margin-top: var(--space-2);
+  font-size: 14px;
+}
+
+/* 按钮：低饱和度点缀色，圆角适中，不做高对比大红大蓝 */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.btn-primary:disabled {
+  background: var(--color-border);
+  color: var(--color-text-faint);
+  cursor: not-allowed;
+}
