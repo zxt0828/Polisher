@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../api/client'
 import { exportResume } from '../../api/resume'
 import type { TailoredResume } from '../../types/resume'
+import { ResumeDocument } from './ResumeDocument'
+import { applyEdit, type FieldPath } from './richText'
 import type { SectionKey } from './sectionConfig'
-import { useResumePreview } from './useResumePreview'
+import '../../styles/resume.css'
 import './Results.css'
 
 interface ResultsProps {
@@ -24,20 +26,35 @@ export function Results({ resume, sections }: ResultsProps) {
   const [isDownloading, setIsDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { previewUrl, isLoading: isPreviewLoading, error: previewError } = useResumePreview(
-    resume,
-    sections,
-  )
+  // editedResume 是本次会话的可编辑副本：挂载时深拷贝一份原始 resume，之后所有
+  // 内联编辑改的都是它，不动上层的原始数据。仅本次会话——离开第三步组件卸载即丢。
+  const [editedResume, setEditedResume] = useState<TailoredResume>(() => structuredClone(resume))
+  // 下载时从 ref 读最新副本：失焦提交（onCommit）和点击下载是两个事件，用 ref
+  // 避免闭包拿到过期的 editedResume。
+  const editedResumeRef = useRef(editedResume)
+  editedResumeRef.current = editedResume
+
+  // 防御：万一上层在组件挂载期间换了新的 resume（重新 tailor），重新克隆、丢弃旧编辑。
+  useEffect(() => {
+    const fresh = structuredClone(resume)
+    setEditedResume(fresh)
+    editedResumeRef.current = fresh
+  }, [resume])
+
+  function handleCommit(path: FieldPath, value: string) {
+    setEditedResume((prev) => applyEdit(prev, path, value))
+  }
 
   async function handleDownload() {
     setIsDownloading(true)
     setError(null)
     try {
-      const { blob, filename } = await exportResume(resume, sections)
+      const current = editedResumeRef.current
+      const { blob, filename } = await exportResume(current, sections)
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = filename ?? buildFallbackFilename(resume)
+      link.download = filename ?? buildFallbackFilename(current)
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -60,21 +77,7 @@ export function Results({ resume, sections }: ResultsProps) {
 
       {error && <p className="field-error">{error}</p>}
 
-      <div className="preview-pane">
-        {isPreviewLoading && previewUrl && (
-          <span className="preview-refreshing">Refreshing preview…</span>
-        )}
-        {previewError && <p className="field-error">{previewError}</p>}
-        <div className="preview-frame">
-          {previewUrl ? (
-            // #toolbar=0&navpanes=0：隐藏 Chrome 内置 PDF 查看器的工具栏和缩略图侧栏，
-            // 只干净地展示简历页面本身；下载走上面的「Download PDF」按钮。
-            <iframe src={`${previewUrl}#toolbar=0&navpanes=0`} title="Resume preview" />
-          ) : (
-            <p className="preview-placeholder">Generating preview…</p>
-          )}
-        </div>
-      </div>
+      <ResumeDocument resume={editedResume} sections={sections} onCommit={handleCommit} />
     </section>
   )
 }

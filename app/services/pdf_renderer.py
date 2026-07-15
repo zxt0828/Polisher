@@ -12,6 +12,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from weasyprint import HTML
 
 from app.schemas import DEFAULT_SECTION_ORDER, TailoredResume
+from app.services.sanitize import sanitize_inline
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
@@ -48,8 +49,12 @@ def _build_context(resume: TailoredResume, sections: list[str]) -> dict:
     # All six optional modules keyed by their canonical name. Building this up
     # front (regardless of `sections`) keeps the formatting logic in one place;
     # the ordered filtering below is what actually decides what renders.
+    # Prose fields (summary, bullets) may carry user-applied bold/italic as a
+    # <strong>/<em> subset; sanitize_inline strips everything else and returns
+    # a Markup so the template renders it unescaped but safely. Every other
+    # field stays a plain str and keeps flowing through Jinja's autoescape.
     by_type = {
-        "summary": resume.summary,
+        "summary": sanitize_inline(resume.summary),
         "education": [
             {
                 "school": edu.school,
@@ -65,12 +70,16 @@ def _build_context(resume: TailoredResume, sections: list[str]) -> dict:
                 "dates": _join_nonempty([exp.start_date, exp.end_date], " – "),
                 "title": exp.title,
                 "location": exp.location,
-                "bullets": exp.bullets,
+                "bullets": [sanitize_inline(bullet) for bullet in exp.bullets],
             }
             for exp in resume.experience
         ],
         "projects": [
-            {"name": proj.name, "tech_stack": proj.tech_stack, "bullets": proj.bullets}
+            {
+                "name": proj.name,
+                "tech_stack": proj.tech_stack,
+                "bullets": [sanitize_inline(bullet) for bullet in proj.bullets],
+            }
             for proj in resume.projects
         ],
         # Key is "entries", not "items": a dict already has a built-in

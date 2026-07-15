@@ -1,0 +1,97 @@
+/* 简历「可编辑文档」的排版样式。是后端 app/templates/resume.html 里 <style>
+   块的一份屏幕版镜像，目的是让屏幕上编辑的文档和导出的 PDF 视觉尽量一致。
+   两边独立维护（前端用 JSX 重画结构，后端用 Jinja2 渲染 + WeasyPrint 出 PDF），
+   PDF 模板才是排版的事实来源；改了任何一边的样式规则记得去另一边同步一次。
+   这是设计文档里权衡过的取舍——可编辑文档没法用内嵌 PDF 实现，只能用 HTML。
+
+   相对后端 <style> 的改动：根选择器换成 .resume-doc（不能用 body，会污染整个
+   App）；去掉 @page（打印分页，屏幕用不上）；去掉 * { box-sizing }（index.css
+   已有全局一份）。其余规则、类名、数值原样保留。 */
+
+.resume-doc {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.35;
+  color: #000;
+}
+
+.resume-doc .contact-name {
+  text-align: center;
+  font-size: 16pt;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.resume-doc .contact-line {
+  text-align: center;
+  font-size: 9.5pt;
+  margin-bottom: 10px;
+}
+
+.resume-doc .section {
+  margin-bottom: 8px;
+}
+
+.resume-doc .section-heading {
+  font-size: 11pt;
+  font-weight: bold;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+  margin: 0 0 4px 0;
+}
+
+.resume-doc .summary-text {
+  margin: 0;
+}
+
+.resume-doc .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.resume-doc .entry {
+  margin-bottom: 6px;
+}
+
+.resume-doc .entry-title {
+  font-weight: bold;
+}
+
+.resume-doc .entry-subtitle {
+  font-style: italic;
+}
+
+.resume-doc ul.bullets {
+  list-style: none;
+  margin: 2px 0 0 0;
+  padding: 0;
+}
+
+.resume-doc ul.bullets li {
+  display: flex;
+  margin-bottom: 2px;
+}
+
+.resume-doc ul.bullets li .bullet-mark {
+  flex: 0 0 14px;
+}
+
+.resume-doc ul.bullets li .bullet-text {
+  flex: 1 1 auto;
+  overflow-wrap: break-word;
+}
+
+.resume-doc .tech-stack {
+  font-style: italic;
+  margin: 2px 0 0 0;
+}
+
+.resume-doc .skills-line {
+  margin-bottom: 2px;
+}
+
+.resume-doc a {
+  color: inherit;
+  text-decoration: none;
+}

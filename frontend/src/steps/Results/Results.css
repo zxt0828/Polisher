@@ -9,6 +9,61 @@
   margin-bottom: 0;
 }
 
+/* 可编辑字段的编辑态提示（悬停/聚焦/空占位）。属于编辑 chrome，不放进镜像
+   PDF 的 resume.css——导出的 PDF 里不应出现这些高亮。 */
+.editable {
+  cursor: text;
+  border-radius: 2px;
+  transition: background 0.1s ease, box-shadow 0.1s ease;
+}
+
+.editable:hover {
+  background: rgba(92, 122, 148, 0.08);
+}
+
+.editable:focus {
+  outline: none;
+  background: rgba(92, 122, 148, 0.12);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* 字段被清空时显示占位文字，避免变成一个点不到的空区域。 */
+.editable:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-faint);
+}
+
+/* 选中富文本时浮在选区上方的加粗/斜体工具条（position: fixed，坐标是视口相对）。 */
+.floating-toolbar {
+  position: fixed;
+  z-index: 10;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--color-text);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.floating-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.floating-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 /* 勾选 + 拖拽排序面板：渲染在左栏 steps 指示器的正下方，占满侧栏宽度。 */
 .sections-panel {
   margin-top: var(--space-6);
@@ -74,39 +129,4 @@
   font-size: 14px;
   color: var(--color-text);
   cursor: pointer;
-}
-
-/* 右侧：真实 PDF 预览 */
-.preview-pane {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.preview-refreshing {
-  display: inline-block;
-  margin-bottom: var(--space-2);
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-.preview-frame {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  overflow: hidden;
-}
-
-.preview-frame iframe {
-  display: block;
-  width: 100%;
-  /* Letter 纸比例（11/8.5≈1.29）撑出一个够高的预览区。 */
-  height: 800px;
-  border: none;
-}
-
-.preview-placeholder {
-  margin: 0;
-  padding: var(--space-6);
-  text-align: center;
-  color: var(--color-text-muted);
 }
