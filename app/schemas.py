@@ -33,8 +33,10 @@ class SkillCategory(BaseModel):
     category: str = Field(description="Skill category name, e.g. 'Backend', 'Frontend', 'DevOps'.")
     items: list[str] = Field(
         default_factory=list,
-        description="Skills in this category, including skills already present in the "
-        "resume plus skills appended from the keyword list.",
+        description="Skills in this category: every skill already present in the resume, "
+        "plus at most a few concrete named technologies (languages, frameworks, tools, "
+        "databases) appended from the keyword list. Never include vague umbrella phrases "
+        "or methodologies. Keep it concise.",
     )
 
 
@@ -118,8 +120,9 @@ class TailoredResume(BaseModel):
     )
     skills: list[SkillCategory] = Field(
         default_factory=list,
-        description="Categorized skills. Additive only: keep every existing skill, and "
-        "append missing skills sourced from the keyword list.",
+        description="Categorized skills. Additive but concise: keep every existing skill, and "
+        "append only a few concrete named technologies from the keyword list (no vague "
+        "umbrella phrases or methodologies). Prefer a small number of focused categories.",
     )
     experience: list[ExperienceItem] = Field(
         default_factory=list,
