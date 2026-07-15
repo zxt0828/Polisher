@@ -3,7 +3,7 @@ import { ApiError } from '../../api/client'
 import { exportResume } from '../../api/resume'
 import type { TailoredResume } from '../../types/resume'
 import { ResumeDocument } from './ResumeDocument'
-import { applyEdit, type FieldPath } from './richText'
+import { applyEdit, removeSkillCategory, type FieldPath } from './richText'
 import type { SectionKey } from './sectionConfig'
 import '../../styles/resume.css'
 import './Results.css'
@@ -45,6 +45,10 @@ export function Results({ resume, sections }: ResultsProps) {
     setEditedResume((prev) => applyEdit(prev, path, value))
   }
 
+  function handleRemoveSkill(index: number) {
+    setEditedResume((prev) => removeSkillCategory(prev, index))
+  }
+
   async function handleDownload() {
     setIsDownloading(true)
     setError(null)
@@ -77,7 +81,12 @@ export function Results({ resume, sections }: ResultsProps) {
 
       {error && <p className="field-error">{error}</p>}
 
-      <ResumeDocument resume={editedResume} sections={sections} onCommit={handleCommit} />
+      <ResumeDocument
+        resume={editedResume}
+        sections={sections}
+        onCommit={handleCommit}
+        onRemoveSkill={handleRemoveSkill}
+      />
     </section>
   )
 }

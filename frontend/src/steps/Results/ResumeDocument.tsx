@@ -8,6 +8,7 @@ interface ResumeDocumentProps {
   resume: TailoredResume
   sections: SectionKey[]
   onCommit: (path: FieldPath, value: string) => void
+  onRemoveSkill: (index: number) => void
 }
 
 // 结构与后端 app/templates/resume.html 对齐：contact 表头永远最先渲染，然后按
@@ -18,7 +19,12 @@ interface ResumeDocumentProps {
 // contact 行里各子字段的展示顺序（与后端 _build_context 一致）。
 const CONTACT_FIELDS = ['city', 'email', 'phone', 'linkedin', 'github'] as const
 
-export function ResumeDocument({ resume, sections, onCommit }: ResumeDocumentProps) {
+export function ResumeDocument({
+  resume,
+  sections,
+  onCommit,
+  onRemoveSkill,
+}: ResumeDocumentProps) {
   // 只渲染非空的 contact 子字段，之间用 " | " 分隔（镜像后端 join）。
   const contactParts = CONTACT_FIELDS.filter((field) => resume.contact[field])
 
@@ -215,6 +221,15 @@ export function ResumeDocument({ resume, sections, onCommit }: ResumeDocumentPro
             <h2 className="section-heading">Skills</h2>
             {resume.skills.map((cat, i) => (
               <div className="skills-line" key={i}>
+                {/* 编辑用的删除按钮：只在前端文档里、悬停出现，不进 PDF。 */}
+                <button
+                  type="button"
+                  className="line-delete"
+                  aria-label="Remove skill line"
+                  onClick={() => onRemoveSkill(i)}
+                >
+                  ×
+                </button>
                 <EditableText
                   value={cat.category}
                   path={{ kind: 'skillCategory', index: i }}

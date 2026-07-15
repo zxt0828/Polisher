@@ -5,4 +5,5 @@ __pycache__/
 .DS_Store
 resume template.pdf
 LOCAL_DEV.md
-Eric_Zhuang_Tailored_Resume.pdf
+# 真实简历（含 PII），任何命名变体都不许进公开仓库
+Eric_Zhuang*.pdf

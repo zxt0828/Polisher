@@ -33,6 +33,35 @@
   color: var(--color-text-faint);
 }
 
+/* skill 行的删除按钮：悬停整行时在左侧 gutter 浮现的 ×，只是前端编辑 chrome，
+   不进 PDF。放在 .resume-doc 作用域下，保持 resume.css 是纯 PDF 镜像。 */
+.resume-doc .skills-line {
+  position: relative;
+}
+
+.resume-doc .line-delete {
+  position: absolute;
+  left: -1.4em;
+  top: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-faint);
+  font-size: 15px;
+  line-height: 1.25;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.resume-doc .skills-line:hover .line-delete {
+  opacity: 1;
+}
+
+.resume-doc .line-delete:hover {
+  color: #c0392b;
+}
+
 /* 选中富文本时浮在选区上方的加粗/斜体工具条（position: fixed，坐标是视口相对）。 */
 .floating-toolbar {
   position: fixed;

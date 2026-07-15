@@ -60,6 +60,11 @@ function splitCsv(value: string): string[] {
     .filter(Boolean)
 }
 
+// 删掉整行 skill 类目（编辑器目前只支持删 skill 行这一种「删除」）。
+export function removeSkillCategory(resume: TailoredResume, index: number): TailoredResume {
+  return { ...resume, skills: resume.skills.filter((_, i) => i !== index) }
+}
+
 // 返回一个改了指定字段的新 resume（不可变更新，只克隆被触达的路径），
 // 其余部分共享引用。value 已经是清洗/trim 过的最终字符串。
 export function applyEdit(resume: TailoredResume, path: FieldPath, value: string): TailoredResume {

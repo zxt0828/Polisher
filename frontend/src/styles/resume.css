@@ -10,34 +10,34 @@
 
 .resume-doc {
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.35;
+  font-size: 10pt;
+  line-height: 1.25;
   color: #000;
 }
 
 .resume-doc .contact-name {
   text-align: center;
-  font-size: 16pt;
+  font-size: 15pt;
   font-weight: bold;
   margin-bottom: 2px;
 }
 
 .resume-doc .contact-line {
   text-align: center;
-  font-size: 9.5pt;
-  margin-bottom: 10px;
-}
-
-.resume-doc .section {
+  font-size: 9pt;
   margin-bottom: 8px;
 }
 
+.resume-doc .section {
+  margin-bottom: 6px;
+}
+
 .resume-doc .section-heading {
-  font-size: 11pt;
+  font-size: 10.5pt;
   font-weight: bold;
   border-bottom: 1px solid #000;
   padding-bottom: 2px;
-  margin: 0 0 4px 0;
+  margin: 0 0 3px 0;
 }
 
 .resume-doc .summary-text {
@@ -51,7 +51,7 @@
 }
 
 .resume-doc .entry {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .resume-doc .entry-title {
@@ -70,7 +70,7 @@
 
 .resume-doc ul.bullets li {
   display: flex;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .resume-doc ul.bullets li .bullet-mark {
