@@ -11,7 +11,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from weasyprint import HTML
 
-from app.schemas import TailoredResume
+from app.schemas import DEFAULT_SECTION_ORDER, TailoredResume
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
@@ -31,20 +31,24 @@ def _join_nonempty(parts: list[str], sep: str = ", ") -> str:
     return sep.join(part for part in parts if part)
 
 
-def _build_context(resume: TailoredResume) -> dict:
+def _build_context(resume: TailoredResume, sections: list[str]) -> dict:
     """Flatten a TailoredResume into plain template variables.
 
     Formatting decisions (how to join degree/major, how to combine start/end
     dates, etc.) live here rather than in the template, so resume.html only
     ever does interpolation, conditionals, and loops.
+
+    `sections` decides which of the six optional modules render and in what
+    order. Contact is not part of it — it always renders first as a fixed
+    header. Modules with no content are skipped here (the same "skip empty
+    module" behavior the template's old per-block {% if %} checks had), so
+    every entry reaching the template is guaranteed non-empty.
     """
     contact = resume.contact
-    return {
-        "contact_name": contact.name,
-        "contact_line": _join_nonempty(
-            [contact.city, contact.email, contact.phone, contact.linkedin, contact.github],
-            " | ",
-        ),
+    # All six optional modules keyed by their canonical name. Building this up
+    # front (regardless of `sections`) keeps the formatting logic in one place;
+    # the ordered filtering below is what actually decides what renders.
+    by_type = {
         "summary": resume.summary,
         "education": [
             {
@@ -79,11 +83,33 @@ def _build_context(resume: TailoredResume) -> dict:
             for cert in resume.certifications
         ],
     }
+    return {
+        "contact_name": contact.name,
+        "contact_line": _join_nonempty(
+            [contact.city, contact.email, contact.phone, contact.linkedin, contact.github],
+            " | ",
+        ),
+        # .get() (not [key]) is defensive: an unknown key silently drops out
+        # rather than raising. The API layer already rejects unknown keys via
+        # ResumeExportRequest's validator; this guards the direct-Python call
+        # path (e.g. scripts/try_pdf_renderer.py) that has no such gate.
+        "sections": [
+            {"type": key, "data": by_type.get(key)}
+            for key in sections
+            if by_type.get(key)
+        ],
+    }
 
 
-def render_resume_pdf(resume: TailoredResume) -> bytes:
-    """Render a TailoredResume into PDF bytes."""
-    html = _template.render(**_build_context(resume))
+def render_resume_pdf(resume: TailoredResume, sections: list[str] | None = None) -> bytes:
+    """Render a TailoredResume into PDF bytes.
+
+    `sections` defaults to the full canonical order (all six modules), so
+    existing single-argument callers keep rendering everything unchanged.
+    """
+    if sections is None:
+        sections = list(DEFAULT_SECTION_ORDER)
+    html = _template.render(**_build_context(resume, sections))
     return HTML(string=html).write_pdf()
 
 

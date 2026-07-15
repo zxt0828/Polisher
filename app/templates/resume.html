@@ -4,10 +4,9 @@
 <meta charset="utf-8">
 <title>Resume</title>
 <!--
-  这份 <style> 在 frontend/src/styles/resume.css 里有一份手动同步的拷贝
-  （类名、数值原样复制，只是把 body 选择器换成了 .resume-preview 方便
-  前端在预览框里局部生效），用来让第三步的屏幕预览和这里导出的 PDF
-  视觉一致。改了这里的任何规则，记得去前端那份也改一次。
+  这套 <style> 是导出 PDF 的唯一排版来源。第三步的屏幕预览现在直接内嵌
+  后端生成的真实 PDF（不再是前端手抄一份 HTML/CSS 模拟稿），所以这里不再
+  需要和任何前端 CSS 文件保持同步。
 -->
 <style>
   @page {
@@ -40,8 +39,10 @@
     margin-bottom: 10px;
   }
 
+  /* 不加 break-inside: avoid：大的 section（如 Experience）若整块避免跨页，
+     放不下时会被整体推到下一页，页尾留一大片空白。让 section 内容可以自然跨页
+     连续排下去，配合 .entry 的 break-inside: avoid，既消除留白又保证单条经历不被拦腰截断。 */
   .section {
-    break-inside: avoid;
     margin-bottom: 8px;
   }
 
@@ -51,6 +52,8 @@
     border-bottom: 1px solid #000;
     padding-bottom: 2px;
     margin: 0 0 4px 0;
+    /* 别让小标题孤零零留在页尾、内容却翻到下一页。 */
+    break-after: avoid;
   }
 
   .summary-text {
@@ -118,17 +121,22 @@
   <div class="contact-line">{{ contact_line }}</div>
   {% endif %}
 
-  {% if summary %}
+  {# 按后端传入的 sections 顺序逐个渲染。每个 section 是 {"type", "data"}，
+     且 data 一定非空（空模块已在 _build_context 里过滤掉），所以这里不再需要
+     模块级的 {% if %} 判空——只保留各分支内部原有的字段级判空。contact 表头在
+     循环之外、永远最先渲染。 #}
+  {% for section in sections %}
+
+  {% if section.type == "summary" %}
   <section class="section">
     <h2 class="section-heading">Summary</h2>
-    <p class="summary-text">{{ summary }}</p>
+    <p class="summary-text">{{ section.data }}</p>
   </section>
-  {% endif %}
 
-  {% if education %}
+  {% elif section.type == "education" %}
   <section class="section">
     <h2 class="section-heading">Education</h2>
-    {% for edu in education %}
+    {% for edu in section.data %}
     <div class="entry row">
       <span class="entry-title">{{ edu.school
         }}{% if edu.degree_major %}, {{ edu.degree_major }}{% endif
@@ -137,12 +145,11 @@
     </div>
     {% endfor %}
   </section>
-  {% endif %}
 
-  {% if experience %}
+  {% elif section.type == "experience" %}
   <section class="section">
     <h2 class="section-heading">Experience</h2>
-    {% for exp in experience %}
+    {% for exp in section.data %}
     <div class="entry">
       <div class="row">
         <span class="entry-title">{{ exp.company }}</span>
@@ -164,12 +171,11 @@
     </div>
     {% endfor %}
   </section>
-  {% endif %}
 
-  {% if projects %}
+  {% elif section.type == "projects" %}
   <section class="section">
     <h2 class="section-heading">Projects</h2>
-    {% for proj in projects %}
+    {% for proj in section.data %}
     <div class="entry">
       <div class="entry-title">{{ proj.name }}</div>
       {% if proj.tech_stack %}
@@ -185,21 +191,19 @@
     </div>
     {% endfor %}
   </section>
-  {% endif %}
 
-  {% if skills %}
+  {% elif section.type == "skills" %}
   <section class="section">
     <h2 class="section-heading">Skills</h2>
-    {% for cat in skills %}
+    {% for cat in section.data %}
     <div class="skills-line"><strong>{{ cat.category }}</strong>: {{ cat.entries|join(", ") }}</div>
     {% endfor %}
   </section>
-  {% endif %}
 
-  {% if certifications %}
+  {% elif section.type == "certifications" %}
   <section class="section">
     <h2 class="section-heading">Certifications</h2>
-    {% for cert in certifications %}
+    {% for cert in section.data %}
     <div class="entry row">
       <span class="entry-title">{{ cert.name }}{% if cert.issuer %} &mdash; {{ cert.issuer }}{% endif %}</span>
       {% if cert.date %}<span>{{ cert.date }}</span>{% endif %}
@@ -207,6 +211,8 @@
     {% endfor %}
   </section>
   {% endif %}
+
+  {% endfor %}
 
 </body>
 </html>

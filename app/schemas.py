@@ -1,6 +1,6 @@
 """Pydantic models: structured output schemas and API request/response models."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Keywords(BaseModel):
@@ -136,3 +136,25 @@ class TailoredResume(BaseModel):
         default_factory=list,
         description="Certification list, extracted verbatim, never rewritten; empty if none.",
     )
+
+
+# The six optional, toggleable/orderable resume modules. `contact` is deliberately excluded:
+# it's a fixed header that always renders first, never part of the `sections` list.
+SECTION_KEYS = {"summary", "education", "experience", "projects", "skills", "certifications"}
+DEFAULT_SECTION_ORDER = ["summary", "education", "experience", "projects", "skills", "certifications"]
+
+
+class ResumeExportRequest(BaseModel):
+    """Request body for POST /api/resume/export: the resume plus which optional modules
+    to render and in what order. Contact always renders first regardless of this list."""
+
+    resume: TailoredResume
+    sections: list[str] = Field(default_factory=lambda: list(DEFAULT_SECTION_ORDER))
+
+    @field_validator("sections")
+    @classmethod
+    def _validate_sections(cls, value: list[str]) -> list[str]:
+        unknown = [key for key in value if key not in SECTION_KEYS]
+        if unknown:
+            raise ValueError(f"Unknown section key(s): {unknown}")
+        return value

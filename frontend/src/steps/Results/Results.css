@@ -9,11 +9,104 @@
   margin-bottom: 0;
 }
 
-/* 模拟一页 Letter 纸：内边距用 0.5in，跟后端 resume.html 里 @page 的
-   margin 对应，让预览框内文字的留白比例和导出的 PDF 看起来一致。 */
-.resume-page {
+/* 勾选 + 拖拽排序面板：渲染在左栏 steps 指示器的正下方，占满侧栏宽度。 */
+.sections-panel {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.sections-panel .eyebrow {
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+.section-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.section-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 0.5in;
-  background: #fff;
+}
+
+/* 未勾选：整行变淡，提示它不会出现在简历里（但内容仍保留）。 */
+.section-row--disabled {
+  opacity: 0.5;
+}
+
+/* 拖拽中：轻微抬起效果，盖住下方行。 */
+.section-row--dragging {
+  box-shadow: var(--shadow-card);
+  z-index: 1;
+}
+
+.drag-handle {
+  border: none;
+  background: none;
+  padding: 0 var(--space-1);
+  color: var(--color-text-faint);
+  font-size: 16px;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.section-row-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+/* 右侧：真实 PDF 预览 */
+.preview-pane {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.preview-refreshing {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.preview-frame {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.preview-frame iframe {
+  display: block;
+  width: 100%;
+  /* Letter 纸比例（11/8.5≈1.29）撑出一个够高的预览区。 */
+  height: 800px;
+  border: none;
+}
+
+.preview-placeholder {
+  margin: 0;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
 }

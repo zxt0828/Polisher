@@ -2,4 +2,7 @@
 .env
 __pycache__/
 *.pyc
+.DS_Store
 resume template.pdf
+LOCAL_DEV.md
+Eric_Zhuang_Tailored_Resume.pdf

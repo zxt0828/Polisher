@@ -4,12 +4,14 @@ Routing layer only: parses the request, calls into services/chains, and
 shapes the response. No business logic lives here.
 """
 
+from typing import Literal
+
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel
 
 from app.chains.extract_keywords import extract_keywords_chain
 from app.chains.tailor import tailor_chain
-from app.schemas import Keywords, TailoredResume
+from app.schemas import Keywords, ResumeExportRequest, TailoredResume
 from app.services.pdf_parser import extract_text_from_pdf
 from app.services.pdf_renderer import build_export_filename, render_resume_pdf
 
@@ -53,14 +55,21 @@ def tailor_resume(
 
 
 @router.post("/resume/export")
-def export_resume(resume: TailoredResume) -> Response:
+def export_resume(
+    req: ResumeExportRequest,
+    # 同一个端点既服务下载又服务实时预览，两者渲染完全一样，只有响应头不同：
+    # 下载用 attachment（触发浏览器下载），预览用 inline（在 <iframe> 里直接展示）。
+    # 用和 Content-Disposition 头取值一致的词（attachment/inline）作为参数值，
+    # 避免再做一层 mode=preview/download 的映射；FastAPI 会自动校验 Literal（非法值返回 422）。
+    disposition: Literal["attachment", "inline"] = "attachment",
+) -> Response:
     # No response_model: this endpoint returns a raw PDF byte stream, not a
     # JSON-serializable Pydantic model, so there's nothing for response_model
     # to validate against.
-    pdf_bytes = render_resume_pdf(resume)
-    filename = build_export_filename(resume)
+    pdf_bytes = render_resume_pdf(req.resume, sections=req.sections)
+    filename = build_export_filename(req.resume)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'{disposition}; filename="{filename}"'},
     )

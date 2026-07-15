@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { arrayMove } from '@dnd-kit/sortable'
 import './App.css'
 import { StepIndicator } from './components/StepIndicator'
 import { JobKeywords } from './steps/JobKeywords/JobKeywords'
 import { ResumeUpload } from './steps/ResumeUpload/ResumeUpload'
 import { Results } from './steps/Results/Results'
+import { SectionsPanel } from './steps/Results/SectionsPanel'
+import { CANONICAL_ORDER, DEFAULT_ENABLED, type SectionKey } from './steps/Results/sectionConfig'
 import type { TailoredResume } from './types/resume'
 import type { StepId } from './types/step'
 
@@ -34,6 +37,25 @@ function App() {
   const [jdText, setJdText] = useState('')
   const [keywords, setKeywords] = useState<string[]>([])
   const [tailoredResume, setTailoredResume] = useState<TailoredResume | null>(null)
+
+  // 简历模块的编排状态放在这里（而不是 Results 内部），因为勾选/排序面板要渲染在
+  // 左栏 steps 下方、和右侧的 PDF 预览分处两栏。order 始终是完整 6 项、只被拖拽改动；
+  // enabled 记录勾选；sections（真正渲染/导出的列表）= 按 order 过滤出被勾选的。
+  // 取消勾选只翻转 enabled、不动 order，重新勾选自然回到原位置。
+  const [sectionOrder, setSectionOrder] = useState<SectionKey[]>(CANONICAL_ORDER)
+  const [sectionEnabled, setSectionEnabled] = useState<Record<SectionKey, boolean>>(DEFAULT_ENABLED)
+  const sections = useMemo(
+    () => sectionOrder.filter((key) => sectionEnabled[key]),
+    [sectionOrder, sectionEnabled],
+  )
+
+  function handleSectionToggle(key: SectionKey) {
+    setSectionEnabled((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  function handleSectionReorder(activeId: SectionKey, overId: SectionKey) {
+    setSectionOrder((prev) => arrayMove(prev, prev.indexOf(activeId), prev.indexOf(overId)))
+  }
 
   // 后端无状态，某一步有没有数据完全取决于前端这几个 state 是否已经填过。
   // 指示器里能不能点回某一步，就看那一步是否已经产出过数据。
@@ -83,6 +105,14 @@ function App() {
             isReachable={isStepReachable}
             onSelect={handleStepSelect}
           />
+          {currentStep === 'results' && tailoredResume && (
+            <SectionsPanel
+              order={sectionOrder}
+              enabled={sectionEnabled}
+              onToggle={handleSectionToggle}
+              onReorder={handleSectionReorder}
+            />
+          )}
         </div>
         <main className="app-content">
           <div className="content-card">
@@ -97,7 +127,9 @@ function App() {
             {currentStep === 'resume' && (
               <ResumeUpload keywords={keywords} onNext={handleResumeTailored} />
             )}
-            {currentStep === 'results' && tailoredResume && <Results resume={tailoredResume} />}
+            {currentStep === 'results' && tailoredResume && (
+              <Results resume={tailoredResume} sections={sections} />
+            )}
           </div>
         </main>
       </div>

@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { ApiError } from '../../api/client'
 import { exportResume } from '../../api/resume'
 import type { TailoredResume } from '../../types/resume'
-import { buildResumeViewModel } from './resumeViewModel'
-import '../../styles/resume.css'
+import type { SectionKey } from './sectionConfig'
+import { useResumePreview } from './useResumePreview'
 import './Results.css'
 
 interface ResultsProps {
   resume: TailoredResume
+  // 由上层（App）持有并传入：勾选/排序后真正要渲染的模块列表。勾选面板本身
+  // 渲染在左栏 steps 下方，不在这个组件里。
+  sections: SectionKey[]
 }
 
 // 跟后端 pdf_renderer.py 的 build_export_filename 逻辑保持一致：只在
@@ -17,16 +20,20 @@ function buildFallbackFilename(resume: TailoredResume): string {
   return safeName ? `${safeName}_Resume.pdf` : 'resume.pdf'
 }
 
-export function Results({ resume }: ResultsProps) {
+export function Results({ resume, sections }: ResultsProps) {
   const [isDownloading, setIsDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const vm = buildResumeViewModel(resume)
+
+  const { previewUrl, isLoading: isPreviewLoading, error: previewError } = useResumePreview(
+    resume,
+    sections,
+  )
 
   async function handleDownload() {
     setIsDownloading(true)
     setError(null)
     try {
-      const { blob, filename } = await exportResume(resume)
+      const { blob, filename } = await exportResume(resume, sections)
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -53,116 +60,18 @@ export function Results({ resume }: ResultsProps) {
 
       {error && <p className="field-error">{error}</p>}
 
-      <div className="resume-page">
-        <div className="resume-preview">
-          <div className="contact-name">{vm.contactName}</div>
-          {vm.contactLine && <div className="contact-line">{vm.contactLine}</div>}
-
-          {vm.summary && (
-            <section className="section">
-              <h2 className="section-heading">Summary</h2>
-              <p className="summary-text">{vm.summary}</p>
-            </section>
-          )}
-
-          {vm.education.length > 0 && (
-            <section className="section">
-              <h2 className="section-heading">Education</h2>
-              {vm.education.map((edu, index) => (
-                <div className="entry row" key={index}>
-                  <span className="entry-title">
-                    {edu.school}
-                    {edu.degreeMajor && `, ${edu.degreeMajor}`}
-                    {edu.gpa && (
-                      <>
-                        , GPA: <strong>{edu.gpa}</strong>
-                      </>
-                    )}
-                  </span>
-                  {edu.dates && <span>{edu.dates}</span>}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {vm.experience.length > 0 && (
-            <section className="section">
-              <h2 className="section-heading">Experience</h2>
-              {vm.experience.map((exp, index) => (
-                <div className="entry" key={index}>
-                  <div className="row">
-                    <span className="entry-title">{exp.company}</span>
-                    {exp.dates && <span>{exp.dates}</span>}
-                  </div>
-                  {(exp.title || exp.location) && (
-                    <div className="row entry-subtitle">
-                      <span>{exp.title}</span>
-                      <span>{exp.location}</span>
-                    </div>
-                  )}
-                  {exp.bullets.length > 0 && (
-                    <ul className="bullets">
-                      {exp.bullets.map((bullet, bulletIndex) => (
-                        <li key={bulletIndex}>
-                          <span className="bullet-mark">●</span>
-                          <span className="bullet-text">{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {vm.projects.length > 0 && (
-            <section className="section">
-              <h2 className="section-heading">Projects</h2>
-              {vm.projects.map((proj, index) => (
-                <div className="entry" key={index}>
-                  <div className="entry-title">{proj.name}</div>
-                  {proj.techStack.length > 0 && (
-                    <div className="tech-stack">{proj.techStack.join(', ')}</div>
-                  )}
-                  {proj.bullets.length > 0 && (
-                    <ul className="bullets">
-                      {proj.bullets.map((bullet, bulletIndex) => (
-                        <li key={bulletIndex}>
-                          <span className="bullet-mark">●</span>
-                          <span className="bullet-text">{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {vm.skills.length > 0 && (
-            <section className="section">
-              <h2 className="section-heading">Skills</h2>
-              {vm.skills.map((skillCategory, index) => (
-                <div className="skills-line" key={index}>
-                  <strong>{skillCategory.category}</strong>: {skillCategory.entries.join(', ')}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {vm.certifications.length > 0 && (
-            <section className="section">
-              <h2 className="section-heading">Certifications</h2>
-              {vm.certifications.map((cert, index) => (
-                <div className="entry row" key={index}>
-                  <span className="entry-title">
-                    {cert.name}
-                    {cert.issuer && ` — ${cert.issuer}`}
-                  </span>
-                  {cert.date && <span>{cert.date}</span>}
-                </div>
-              ))}
-            </section>
+      <div className="preview-pane">
+        {isPreviewLoading && previewUrl && (
+          <span className="preview-refreshing">Refreshing preview…</span>
+        )}
+        {previewError && <p className="field-error">{previewError}</p>}
+        <div className="preview-frame">
+          {previewUrl ? (
+            // #toolbar=0&navpanes=0：隐藏 Chrome 内置 PDF 查看器的工具栏和缩略图侧栏，
+            // 只干净地展示简历页面本身；下载走上面的「Download PDF」按钮。
+            <iframe src={`${previewUrl}#toolbar=0&navpanes=0`} title="Resume preview" />
+          ) : (
+            <p className="preview-placeholder">Generating preview…</p>
           )}
         </div>
       </div>
