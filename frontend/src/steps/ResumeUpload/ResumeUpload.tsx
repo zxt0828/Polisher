@@ -8,6 +8,9 @@ import './ResumeUpload.css'
 
 interface ResumeUploadProps {
   keywords: string[]
+  // 选中的文件由上层（App）持有并传入，这样离开第二步再回来时不会丢失。
+  file: File | null
+  onFileChange: (file: File | null) => void
   onNext: (resume: TailoredResume) => void
 }
 
@@ -26,8 +29,8 @@ function validateFile(file: File): string | null {
   return null
 }
 
-export function ResumeUpload({ keywords, onNext }: ResumeUploadProps) {
-  const [file, setFile] = useState<File | null>(null)
+export function ResumeUpload({ keywords, file, onFileChange, onNext }: ResumeUploadProps) {
+  // 只有这几个是瞬时 UI 状态，无需跨步骤保留，留在局部即可（选中的文件已提升到 App）。
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isTailoring, setIsTailoring] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
@@ -36,13 +39,13 @@ export function ResumeUpload({ keywords, onNext }: ResumeUploadProps) {
     const selected = event.target.files?.[0] ?? null
     setApiError(null)
     if (!selected) {
-      setFile(null)
+      onFileChange(null)
       setValidationError(null)
       return
     }
     const error = validateFile(selected)
     setValidationError(error)
-    setFile(error ? null : selected)
+    onFileChange(error ? null : selected)
   }
 
   async function handleTailor() {

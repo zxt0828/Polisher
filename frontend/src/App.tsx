@@ -36,6 +36,8 @@ function App() {
   const [currentStep, setCurrentStep] = useState<StepId>('keywords')
   const [jdText, setJdText] = useState('')
   const [keywords, setKeywords] = useState<string[]>([])
+  // 上传的简历文件放在这里而不是 ResumeUpload 内部，否则离开第二步组件卸载后文件会丢。
+  const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [tailoredResume, setTailoredResume] = useState<TailoredResume | null>(null)
 
   // 简历模块的编排状态放在这里（而不是 Results 内部），因为勾选/排序面板要渲染在
@@ -125,7 +127,12 @@ function App() {
               />
             )}
             {currentStep === 'resume' && (
-              <ResumeUpload keywords={keywords} onNext={handleResumeTailored} />
+              <ResumeUpload
+                keywords={keywords}
+                file={resumeFile}
+                onFileChange={setResumeFile}
+                onNext={handleResumeTailored}
+              />
             )}
             {currentStep === 'results' && tailoredResume && (
               <Results resume={tailoredResume} sections={sections} />
