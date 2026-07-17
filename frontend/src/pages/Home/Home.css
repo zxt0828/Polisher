@@ -1,0 +1,160 @@
+.home {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+}
+
+.home__hero {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* 小药丸标签：点缀色文字 + 同色低透明度底。 */
+.home__badge {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--color-accent);
+  background: rgba(92, 122, 148, 0.1);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.home__title {
+  font-size: 48px;
+  line-height: 1.1;
+  margin-bottom: var(--space-4);
+}
+
+.home__title em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.home__subtitle {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* 中央入口按钮，居中、稍大更醒目。 */
+.home__cta {
+  margin-top: var(--space-7);
+}
+
+.home__cta-btn {
+  font-size: 16px;
+  padding: 14px 28px;
+}
+
+.home__meta {
+  font-size: 13px;
+  color: var(--color-text-faint);
+  margin-top: var(--space-4);
+}
+
+/* 三步说明：一排等宽，窄屏堆成一列。 */
+.home__steps {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-7) auto 0;
+  max-width: 860px;
+  display: flex;
+  gap: var(--space-5);
+}
+
+.home__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.home__step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+.home__step-text {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 200px;
+}
+
+/* 入场动画：元素依次上浮淡入（「字体浮现」效果）。纯 CSS、无依赖。 */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home__badge,
+.home__title,
+.home__subtitle,
+.home__cta,
+.home__meta,
+.home__steps {
+  opacity: 0;
+  animation: fadeUp 0.5s ease-out forwards;
+}
+
+.home__badge {
+  animation-delay: 0.05s;
+}
+.home__title {
+  animation-delay: 0.12s;
+}
+.home__subtitle {
+  animation-delay: 0.2s;
+}
+.home__cta {
+  animation-delay: 0.3s;
+}
+.home__meta {
+  animation-delay: 0.4s;
+}
+.home__steps {
+  animation-delay: 0.48s;
+}
+
+/* 尊重系统「减少动态效果」偏好：直接显示、不做动画。 */
+@media (prefers-reduced-motion: reduce) {
+  .home__badge,
+  .home__title,
+  .home__subtitle,
+  .home__cta,
+  .home__meta,
+  .home__steps {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .home__title {
+    font-size: 34px;
+  }
+
+  .home__steps {
+    flex-direction: column;
+    align-items: center;
+  }
+}

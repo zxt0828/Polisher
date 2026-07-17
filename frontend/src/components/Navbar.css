@@ -1,0 +1,59 @@
+/* 顶部导航栏：贴顶全宽，内容对齐到和 .app-layout 同宽（1200px），下方一条极淡分隔线。 */
+.navbar {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.navbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__brand {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Pricing：低调文字链接款。 */
+.navbar__link {
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-2) 0;
+}
+
+.navbar__link:hover {
+  color: var(--color-text);
+}
+
+/* 带框的按钮样式（低调描边款），功能后续再接。 */
+.navbar__signin {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: var(--space-2) var(--space-4);
+}
+
+.navbar__signin:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}

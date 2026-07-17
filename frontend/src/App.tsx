@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import { arrayMove } from '@dnd-kit/sortable'
 import './App.css'
+import { Navbar } from './components/Navbar'
 import { StepIndicator } from './components/StepIndicator'
+import { Home } from './pages/Home/Home'
 import { JobKeywords } from './steps/JobKeywords/JobKeywords'
 import { ResumeUpload } from './steps/ResumeUpload/ResumeUpload'
 import { Results } from './steps/Results/Results'
@@ -33,6 +35,8 @@ function sameKeywordSet(a: string[], b: string[]): boolean {
 }
 
 function App() {
+  // 顶层视图：落地页 / 三步向导。沿用「无路由、条件渲染」的思路（同 currentStep）。
+  const [view, setView] = useState<'home' | 'wizard'>('home')
   const [currentStep, setCurrentStep] = useState<StepId>('keywords')
   const [jdText, setJdText] = useState('')
   const [keywords, setKeywords] = useState<string[]>([])
@@ -94,9 +98,20 @@ function App() {
     setCurrentStep('results')
   }
 
+  // 从落地页进向导：始终落到第一步（贴 JD），再切视图。
+  function handleStartFromHome() {
+    setCurrentStep('keywords')
+    setView('wizard')
+  }
+
   return (
-    <div className="app-layout">
-      <header className="page-header">
+    <>
+      <Navbar onHome={() => setView('home')} />
+      {view === 'home' ? (
+        <Home onStart={handleStartFromHome} />
+      ) : (
+        <div className="app-layout">
+          <header className="page-header">
         <span className="eyebrow">{PAGE_KICKER}</span>
         <h1>{STEP_HEADINGS[currentStep]}</h1>
       </header>
@@ -137,10 +152,12 @@ function App() {
             {currentStep === 'results' && tailoredResume && (
               <Results resume={tailoredResume} sections={sections} />
             )}
-          </div>
-        </main>
-      </div>
-    </div>
+            </div>
+          </main>
+        </div>
+        </div>
+      )}
+    </>
   )
 }
 

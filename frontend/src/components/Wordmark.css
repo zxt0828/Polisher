@@ -1,0 +1,14 @@
+/* 艺术字文字标：斜体衬线 + 轻微负字距，词尾句点用点缀色。 */
+.wordmark {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  user-select: none;
+}
+
+.wordmark__dot {
+  color: var(--color-accent);
+}
