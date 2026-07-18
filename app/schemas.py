@@ -141,6 +141,25 @@ class TailoredResume(BaseModel):
     )
 
 
+class RefinedBullet(BaseModel):
+    """One bullet after the naturalness pass, tied back to its input by `id`."""
+
+    id: int = Field(
+        description="The same id as the input bullet, so the refined text can be "
+        "spliced back to the exact experience/project bullet it came from."
+    )
+    text: str = Field(description="The refined bullet text (verbatim original if unchanged).")
+
+
+class RefinedBullets(BaseModel):
+    """Structured output of the refine pass: exactly one RefinedBullet per input id."""
+
+    bullets: list[RefinedBullet] = Field(
+        default_factory=list,
+        description="Refined bullets, one per input id, same ids, none added/dropped/merged.",
+    )
+
+
 # The six optional, toggleable/orderable resume modules. `contact` is deliberately excluded:
 # it's a fixed header that always renders first, never part of the `sections` list.
 SECTION_KEYS = {"summary", "education", "experience", "projects", "skills", "certifications"}

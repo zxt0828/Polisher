@@ -24,9 +24,14 @@ jsonpointer==3.1.1
 langchain-anthropic==1.4.8
 langchain-core==1.4.8
 langchain-protocol==0.0.18
+langgraph==1.2.9
+langgraph-checkpoint==4.1.1
+langgraph-prebuilt==1.1.0
+langgraph-sdk==0.4.2
 langsmith==0.9.7
 MarkupSafe==3.0.3
 orjson==3.11.9
+ormsgpack==1.12.2
 packaging==26.2
 pdfminer.six==20260107
 pdfplumber==0.11.10
@@ -54,7 +59,7 @@ uuid_utils==0.16.2
 uvicorn==0.50.0
 weasyprint==69.0
 webencodings==0.5.1
-websockets==16.0
+websockets==15.0.1
 xxhash==3.8.0
 zopfli==0.4.3
 zstandard==0.25.0

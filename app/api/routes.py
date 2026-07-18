@@ -8,7 +8,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel
 
 from app.chains.extract_keywords import extract_keywords_chain
-from app.chains.tailor import tailor_chain
+from app.graph.build import tailor_graph
 from app.schemas import Keywords, ResumeExportRequest, TailoredResume
 from app.services.pdf_parser import extract_text_from_pdf
 from app.services.pdf_renderer import build_export_filename, render_resume_pdf
@@ -45,11 +45,11 @@ def tailor_resume(
         # translate it into a clean 400 with a readable message instead.
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    # tailor_chain's prompt template (app/prompts/tailor.py) has placeholders
-    # `resume_text` and `keywords` — the invoke dict keys must match those
-    # placeholder names exactly, which is why the extracted text is passed
-    # under "resume_text" rather than "resume".
-    return tailor_chain.invoke({"resume_text": resume_text, "keywords": keywords})
+    # tailor_graph runs the two-pass pipeline: tailor (coverage) -> refine (naturalness).
+    # Its input keys match TailorState (app/graph/state.py); the final tailored resume is
+    # read from the "resume" channel of the resulting state.
+    result = tailor_graph.invoke({"resume_text": resume_text, "keywords": keywords})
+    return result["resume"]
 
 
 @router.post("/resume/export")
