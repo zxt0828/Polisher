@@ -9,6 +9,12 @@
   margin-bottom: 0;
 }
 
+.results-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 /* 可编辑字段的编辑态提示（悬停/聚焦/空占位）。属于编辑 chrome，不放进镜像
    PDF 的 resume.css——导出的 PDF 里不应出现这些高亮。 */
 .editable {

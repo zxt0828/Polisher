@@ -13,6 +13,8 @@ interface ResultsProps {
   // 由上层（App）持有并传入：勾选/排序后真正要渲染的模块列表。勾选面板本身
   // 渲染在左栏 steps 下方，不在这个组件里。
   sections: SectionKey[]
+  // 「换一份 JD 重新定制」：清空整个向导状态并回到第一步，由上层 App 处理。
+  onTailorNewJob: () => void
 }
 
 // 跟后端 pdf_renderer.py 的 build_export_filename 逻辑保持一致：只在
@@ -22,7 +24,7 @@ function buildFallbackFilename(resume: TailoredResume): string {
   return safeName ? `${safeName}_Resume.pdf` : 'resume.pdf'
 }
 
-export function Results({ resume, sections }: ResultsProps) {
+export function Results({ resume, sections, onTailorNewJob }: ResultsProps) {
   const [isDownloading, setIsDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -74,9 +76,14 @@ export function Results({ resume, sections }: ResultsProps) {
     <section>
       <div className="results-toolbar">
         <span className="eyebrow">Tailored Resume</span>
-        <button type="button" className="btn-primary" onClick={handleDownload} disabled={isDownloading}>
-          {isDownloading ? 'Preparing…' : 'Download PDF'}
-        </button>
+        <div className="results-actions">
+          <button type="button" className="btn-secondary" onClick={onTailorNewJob}>
+            Tailor for a new job
+          </button>
+          <button type="button" className="btn-primary" onClick={handleDownload} disabled={isDownloading}>
+            {isDownloading ? 'Preparing…' : 'Download PDF'}
+          </button>
+        </div>
       </div>
 
       {error && <p className="field-error">{error}</p>}

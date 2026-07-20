@@ -104,6 +104,18 @@ function App() {
     setView('wizard')
   }
 
+  // 结果页「换一份 JD 重新定制」：清掉上一份流程的所有产物（JD 文本、关键词、
+  // 上传的简历、定制结果、模块编排全部恢复默认），回到第一步从头贴新 JD。
+  function handleTailorNewJob() {
+    setJdText('')
+    setKeywords([])
+    setResumeFile(null)
+    setTailoredResume(null)
+    setSectionOrder(CANONICAL_ORDER)
+    setSectionEnabled(DEFAULT_ENABLED)
+    setCurrentStep('keywords')
+  }
+
   return (
     <>
       <Navbar onHome={() => setView('home')} />
@@ -150,7 +162,11 @@ function App() {
               />
             )}
             {currentStep === 'results' && tailoredResume && (
-              <Results resume={tailoredResume} sections={sections} />
+              <Results
+                resume={tailoredResume}
+                sections={sections}
+                onTailorNewJob={handleTailorNewJob}
+              />
             )}
             </div>
           </main>
