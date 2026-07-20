@@ -4,27 +4,98 @@
 
 Polisher 是一个 AI 简历优化助手，帮助求职者根据具体的职位描述（JD）快速调整简历，提高通过 ATS（申请人跟踪系统）筛选的概率，同时给出通用的简历修改建议。
 
-## 解决的问题
+![Polisher — Job & Keywords 步骤](docs/preview.png)
 
-- 每投递一个岗位都手动调整简历措辞、关键词很耗时，容易遗漏JD里的关键要求
-- 很多简历因为关键词不匹配、格式不规范，在ATS自动筛选阶段就被淘汰，根本到不了HR手上
-- 缺少专业、客观的第三方视角来评估简历的表达是否有效（比如动词强度、量化程度、结构是否清晰）
+## 使用流程
 
-## 核心功能
+Polisher 是一个三步向导：
 
-### 1. JD定向优化
-用户提供简历和目标职位的JD，Polisher 分析两者的匹配度，识别JD中的关键词、技能要求，并据此调整简历的措辞和重点，使其更贴合该职位、更容易通过ATS筛选。
+1. **Job & Keywords** —— 粘贴目标岗位的 JD。后端提取其中的关键词和技能要求，以可编辑的 chips 呈现，你可以在继续前删掉不相关的词。
+2. **Résumé** —— 上传简历（PDF）。系统解析其文本，连同确认后的关键词一起送入两遍式的定制流程。
+3. **Results** —— 在可内联编辑的文档里预览定制后的简历，调整/勾选各模块的顺序与显隐，并导出为可打印的 PDF。**Tailor for a new job** 按钮会重置整个向导，方便你立即针对另一份 JD 重新定制。
 
-### 2. 简历修改建议
-不针对特定JD，从通用简历写作的角度给出改进建议，例如：
-- 经历描述是否量化、是否使用有力的动作动词
-- 结构和信息层次是否清晰
-- 是否存在冗余或表达模糊的内容
+底层的定制是一条 [LangGraph](https://langchain-ai.github.io/langgraph/) 两遍式流水线：先由 **tailor** 遍重写经历要点以覆盖目标关键词，再由 **refine** 遍把措辞打磨回自然、像真人写的表达。两遍都通过 `langchain-anthropic` 调用 Claude。
 
-## 目标用户
+## 技术栈
 
-正在求职、需要针对不同岗位反复调整简历的求职者。
+- **后端：** Python、FastAPI、LangGraph + LangChain、Anthropic Claude。PDF 解析用 `pdfplumber`；PDF 渲染用 Jinja2 HTML 模板 + WeasyPrint。
+- **前端：** React 19 + TypeScript + Vite，用 `@dnd-kit` 做模块拖拽排序。
+
+## API
+
+后端在 `/api` 下暴露三个接口：
+
+| 接口 | 方法 | 作用 |
+| --- | --- | --- |
+| `/api/keywords/extract` | POST | 从粘贴的 JD 中提取关键词（JSON body） |
+| `/api/resume/tailor` | POST | 根据关键词定制上传的简历（multipart form） |
+| `/api/resume/export` | POST | 把最终简历渲染成可下载的 PDF |
+
+## 项目结构
+
+```
+app/                    # FastAPI 后端
+├── main.py             # 应用入口：CORS、挂载路由、健康检查
+├── config.py           # 配置 / 环境变量加载
+├── schemas.py          # Pydantic 请求/响应模型
+├── api/routes.py       # 三个 /api 接口
+├── chains/             # LangChain chains（extract_keywords、tailor、refine_bullets）
+├── graph/              # LangGraph 两遍式流水线（build、nodes、state）
+├── prompts/            # 提示词模板
+├── services/           # pdf_parser、pdf_renderer、bullet_refiner、jd_fetcher、sanitize
+└── templates/resume.html   # 渲染导出 PDF 用的 Jinja2 模板
+
+frontend/               # React + Vite 前端
+└── src/
+    ├── App.tsx         # 顶层视图 + 向导状态
+    ├── pages/Home/     # 落地页
+    ├── steps/          # JobKeywords、ResumeUpload、Results
+    ├── components/     # Navbar、StepIndicator、KeywordChips、Wordmark
+    ├── api/            # 后端客户端
+    ├── styles/         # 设计 token + 简历样式
+    └── types/          # 共享的 TypeScript 类型
+
+scripts/                # 本地开发 + 手动试跑脚本
+```
+
+## 快速开始
+
+### 前置条件
+
+- Python 3.11，根目录有 `.venv` 并已安装 `requirements.txt` 里的依赖
+- Node.js，`frontend/node_modules` 已 `npm install`
+- 一个 Anthropic API key
+- 仅 macOS：WeasyPrint 需要原生的 Pango/Cairo 库（`brew install pango`）
+
+### 配置
+
+```bash
+cp .env.example .env                   # 填入 ANTHROPIC_API_KEY
+cp frontend/.env.example frontend/.env # VITE_API_BASE_URL=http://localhost:8000
+```
+
+### 启动后端（`http://localhost:8000`）
+
+```bash
+source .venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
+
+在 Apple Silicon Mac 上，需要给命令加前缀，让 WeasyPrint 能加载它的原生库：
+
+```bash
+DYLD_LIBRARY_PATH=/opt/homebrew/lib uvicorn app.main:app --reload --port 8000
+```
+
+### 启动前端（`http://localhost:5173`）
+
+```bash
+cd frontend
+npm run dev
+```
+
+然后打开 `http://localhost:5173`，即可看到上图所示的向导界面。
 
 ## 当前状态
 
-项目处于early development阶段，第一个MVP聚焦于"JD定向优化"功能。
+项目处于 early development 阶段，当前 MVP 聚焦于把"JD定向优化"功能端到端跑通（提取 → 定制 → 打磨 → 导出）。
