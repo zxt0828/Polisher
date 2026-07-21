@@ -16,6 +16,15 @@ if (!rawBaseUrl) {
 // 削掉结尾多余的斜杠，避免和下面路径开头的 "/" 拼成 "//api/..."。
 export const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '')
 
+// 当前登录 token。放在模块级变量里而不是让每个调用方自己传，是为了让这层
+// 请求封装保持和 React 解耦——AuthContext 在登录/登出/水合时调用 setAuthToken
+// 把 token 镜像进来，request() 就能自动给所有请求带上鉴权头，调用方无感。
+let authToken: string | null = null
+
+export function setAuthToken(token: string | null): void {
+  authToken = token
+}
+
 export class ApiError extends Error {
   status: number
 
@@ -71,6 +80,14 @@ async function throwIfNotOk(response: Response): Promise<void> {
 // 返回 4xx/5xx），调用方只需要 catch ApiError 一种类型即可，不用再
 // 额外接一层 try/catch 处理网络层异常。
 async function request(path: string, init: RequestInit): Promise<Response> {
+  // 有 token 就统一带上鉴权头。用 Headers 合并而不是直接铺开 init.headers，
+  // 是因为调用方传进来的 headers 可能是数组或 Headers 实例（不只是普通对象），
+  // 用 Headers 构造再 set 能把这几种形态都收敛掉，且不会覆盖调用方已设的头。
+  if (authToken) {
+    const headers = new Headers(init.headers)
+    headers.set('Authorization', `Bearer ${authToken}`)
+    init = { ...init, headers }
+  }
   let response: Response
   try {
     response = await fetch(`${API_BASE_URL}${path}`, init)
@@ -80,6 +97,11 @@ async function request(path: string, init: RequestInit): Promise<Response> {
   }
   await throwIfNotOk(response)
   return response
+}
+
+export async function getJson<T>(path: string): Promise<T> {
+  const response = await request(path, { method: 'GET' })
+  return response.json()
 }
 
 export async function postJson<T>(path: string, body: unknown): Promise<T> {

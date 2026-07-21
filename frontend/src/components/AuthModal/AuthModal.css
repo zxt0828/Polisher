@@ -1,0 +1,201 @@
+/* 登录/注册弹窗。整体对齐设计图 1：暖白卡片居中、黑色主按钮、圆角胶囊输入框。
+   颜色/间距/圆角全部走 tokens.css 变量，不硬编码。 */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(26, 26, 26, 0.55);
+}
+
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-7) var(--space-6) var(--space-6);
+  text-align: center;
+}
+
+.auth-close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-close:hover {
+  color: var(--color-text);
+}
+
+.auth-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.auth-title {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 var(--space-2);
+}
+
+.auth-subtitle {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-5);
+}
+
+/* Continue with Google：描边胶囊款；本期禁用（Coming soon）。 */
+.auth-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.auth-google:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.auth-google__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.auth-google__soon {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* 「or with email」：两侧细线夹一段灰字。 */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  color: var(--color-text-faint);
+  font-size: 13px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.auth-input {
+  width: 100%;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.auth-input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.auth-error {
+  margin: 0;
+  color: #b3261e;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* 主按钮：整宽、黑底白字（对齐设计图的 Log in 按钮）。 */
+.auth-submit {
+  width: 100%;
+  padding: var(--space-4);
+  margin-top: var(--space-1);
+  background: var(--color-text);
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-surface);
+  cursor: pointer;
+}
+
+.auth-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.auth-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-switch {
+  margin: var(--space-5) 0 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.auth-switch__link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.auth-switch__link:hover {
+  color: var(--color-accent-hover);
+}

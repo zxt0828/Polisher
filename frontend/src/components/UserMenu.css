@@ -1,0 +1,113 @@
+/* 登录态账户区块 + 下拉菜单（对应设计图 2）。颜色/间距走 tokens 变量。 */
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  padding: var(--space-1);
+  cursor: pointer;
+  font: inherit;
+}
+
+.user-menu__name {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* 缩写头像：石板蓝圆底 + 白字。 */
+.user-menu__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.user-menu__chevron {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 下拉卡片：贴在触发区右下方。 */
+.user-menu__dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  min-width: 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-2);
+  z-index: 50;
+}
+
+.user-menu__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+}
+
+.user-menu__identity-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.user-menu__identity-email {
+  font-size: 13px;
+  color: var(--color-text-faint);
+}
+
+.user-menu__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-2) 0;
+}
+
+.user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 15px;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.user-menu__item:hover {
+  background: var(--color-bg);
+}
+
+.user-menu__item-icon {
+  width: 18px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.user-menu__item--danger {
+  color: #b3261e;
+}
+
+.user-menu__item--danger .user-menu__item-icon {
+  color: #b3261e;
+}
