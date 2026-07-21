@@ -1,6 +1,8 @@
 """Pydantic models: structured output schemas and API request/response models."""
 
-from pydantic import BaseModel, Field, field_validator
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class Keywords(BaseModel):
@@ -180,3 +182,57 @@ class ResumeExportRequest(BaseModel):
         if unknown:
             raise ValueError(f"Unknown section key(s): {unknown}")
         return value
+
+
+# ---------------------------------------------------------------------------
+# 账户系统（注册/登录）的请求 & 响应模型
+# ---------------------------------------------------------------------------
+
+
+class RegisterRequest(BaseModel):
+    """POST /api/auth/register 的请求体：邮箱 + 密码。"""
+
+    # EmailStr 自动校验邮箱格式（不合法直接 422），比手写正则更严谨。
+    email: EmailStr = Field(description="Account email; must be a valid email address.")
+    # 密码明文，仅在此处短暂存在，随后立刻交给 bcrypt 加密，绝不落库、绝不回传。
+    # min_length 挡住过短的弱密码；max_length 72 是因为 bcrypt 只处理前 72 字节，
+    # 更长的部分会被静默忽略，不如在入口就明确拒绝，避免用户误以为长密码更安全。
+    password: str = Field(min_length=8, max_length=72, description="Plaintext password, 8-72 chars.")
+
+    @field_validator("password")
+    @classmethod
+    def _password_within_bcrypt_limit(cls, value: str) -> str:
+        # max_length 按「字符数」算，但 bcrypt 的 72 是「字节数」；含中文等多字节字符时
+        # 字符数没超、字节数可能超，这里按 UTF-8 字节数再兜一道底。
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Password must not exceed 72 bytes when UTF-8 encoded.")
+        return value
+
+
+class LoginRequest(BaseModel):
+    """POST /api/auth/login 的请求体：邮箱 + 密码。
+    登录只做「核对」，不对密码长度设限（存量用户可能是旧规则注册的），
+    对不对由 verify_password 说了算。"""
+
+    email: EmailStr = Field(description="Account email.")
+    password: str = Field(description="Plaintext password to verify.")
+
+
+class UserOut(BaseModel):
+    """回给前端的用户信息。刻意不含 password_hash —— 密码相关字段永远不出接口。"""
+
+    # from_attributes=True：允许直接用 ORM 的 User 对象（属性访问）来构造，
+    # 即 UserOut.model_validate(user_orm_obj)，不用手动搬字段。
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(description="User id (primary key).")
+    email: EmailStr = Field(description="Account email.")
+    created_at: datetime = Field(description="Registration time.")
+
+
+class TokenResponse(BaseModel):
+    """注册/登录成功后返回的通行证。token_type 固定 'bearer'，
+    前端据此拼出 Authorization: Bearer <access_token> 头。"""
+
+    access_token: str = Field(description="Signed JWT access token.")
+    token_type: str = Field(default="bearer", description="Token type; always 'bearer'.")

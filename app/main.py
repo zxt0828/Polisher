@@ -1,11 +1,26 @@
 """FastAPI 应用入口：创建 app 实例、配置 CORS、挂载路由、暴露健康检查。"""
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import router
+from app import models  # noqa: F401  # 仅为触发 User 表注册进 Base.metadata，下面 create_all 才建得出表
+from app.api.auth_routes import router as auth_router
+from app.api.resume_routes import router as resume_router
+from app.db import Base, engine
 
-app = FastAPI(title="Polisher")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 应用启动时自动建表：遍历所有继承 Base 的模型，在 polisher 库里建出尚不存在的表
+    # （users 表由此而来）。已存在的表会跳过，不删数据、不改结构，反复启动安全。
+    # yield 之前的代码在「启动时」跑，yield 之后（这里没有）会在「关闭时」跑。
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="Polisher", lifespan=lifespan)
 
 # CORS（跨域资源共享）：浏览器出于安全考虑，默认禁止网页 JS 向和自己不同源
 # （协议+域名+端口任一不同即算跨域）的后端发请求，这叫「同源策略」。
@@ -34,12 +49,14 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],
 )
 
-# include_router 把 routes.py 里定义好的 APIRouter 挂载到这个 app 上。
-# router 内部已经自带了 prefix="/api"，所以这里不用再传 prefix 参数，
-# 否则会重复拼成 /api/api/...。
-# 对比 Spring：这大致相当于把一个带 @RequestMapping("/api") 的 @RestController
-# 注册进 Spring 的 DispatcherServlet，让它开始接收对应路径的请求。
-app.include_router(router)
+# include_router 把各 APIRouter 挂载到 app 上。每个 router 内部已自带 prefix
+# （resume 的是 "/api"，auth 的是 "/api/auth"），所以这里不用再传 prefix 参数，
+# 否则会重复拼成 /api/api/...。CORS 无需为 JWT 改动：Authorization 头已被上面
+# allow_headers=["*"] 放行，浏览器带 Bearer token 请求不会被拦。
+# 对比 Spring：这大致相当于把带 @RequestMapping 的 @RestController 注册进
+# Spring 的 DispatcherServlet，让它开始接收对应路径的请求。
+app.include_router(resume_router)
+app.include_router(auth_router)
 
 
 @app.get("/")
