@@ -38,7 +38,7 @@ app/                    # FastAPI 后端
 ├── main.py             # 应用入口：CORS、挂载路由、健康检查
 ├── config.py           # 配置 / 环境变量加载
 ├── schemas.py          # Pydantic 请求/响应模型
-├── api/routes.py       # 三个 /api 接口
+├── api/resume_routes.py  # 三个简历 /api 接口
 ├── chains/             # LangChain chains（extract_keywords、tailor、refine_bullets）
 ├── graph/              # LangGraph 两遍式流水线（build、nodes、state）
 ├── prompts/            # 提示词模板

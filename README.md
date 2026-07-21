@@ -38,7 +38,7 @@ app/                    # FastAPI backend
 ├── main.py             # App entry: CORS, router mount, health check
 ├── config.py           # Settings / env loading
 ├── schemas.py          # Pydantic request/response models
-├── api/routes.py       # The three /api endpoints
+├── api/resume_routes.py  # The three resume /api endpoints
 ├── chains/             # LangChain chains (extract_keywords, tailor, refine_bullets)
 ├── graph/              # LangGraph two-pass pipeline (build, nodes, state)
 ├── prompts/            # Prompt templates
