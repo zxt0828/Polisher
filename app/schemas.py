@@ -218,6 +218,13 @@ class LoginRequest(BaseModel):
     password: str = Field(description="Plaintext password to verify.")
 
 
+class GoogleAuthRequest(BaseModel):
+    """POST /api/auth/google 的请求体：前端从 Google 拿到的 id_token。
+    后端会用 Google 公钥验签并取出邮箱，据此查/建用户，最后签发本应用自己的 JWT。"""
+
+    id_token: str = Field(description="Google-issued id_token (a JWT) obtained on the frontend.")
+
+
 class UserOut(BaseModel):
     """回给前端的用户信息。刻意不含 password_hash —— 密码相关字段永远不出接口。"""
 

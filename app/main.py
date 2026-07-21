@@ -1,26 +1,15 @@
 """FastAPI 应用入口：创建 app 实例、配置 CORS、挂载路由、暴露健康检查。"""
 
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import models  # noqa: F401  # 仅为触发 User 表注册进 Base.metadata，下面 create_all 才建得出表
 from app.api.auth_routes import router as auth_router
 from app.api.resume_routes import router as resume_router
-from app.db import Base, engine
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # 应用启动时自动建表：遍历所有继承 Base 的模型，在 polisher 库里建出尚不存在的表
-    # （users 表由此而来）。已存在的表会跳过，不删数据、不改结构，反复启动安全。
-    # yield 之前的代码在「启动时」跑，yield 之后（这里没有）会在「关闭时」跑。
-    Base.metadata.create_all(bind=engine)
-    yield
-
-
-app = FastAPI(title="Polisher", lifespan=lifespan)
+# 表结构由 Alembic 迁移管理（`alembic upgrade head`），不再在启动时 create_all，
+# 避免「应用建表」与「迁移历史」两套各行其是。新环境初始化先跑一次 upgrade。
+app = FastAPI(title="Polisher")
 
 # CORS（跨域资源共享）：浏览器出于安全考虑，默认禁止网页 JS 向和自己不同源
 # （协议+域名+端口任一不同即算跨域）的后端发请求，这叫「同源策略」。

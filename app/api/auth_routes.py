@@ -12,13 +12,20 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import User
-from app.schemas import LoginRequest, RegisterRequest, TokenResponse, UserOut
+from app.schemas import (
+    GoogleAuthRequest,
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserOut,
+)
 from app.services.auth import (
     create_access_token,
     decode_token,
     hash_password,
     verify_password,
 )
+from app.services.google_oauth import InvalidGoogleToken, verify_google_id_token
 
 router = APIRouter(prefix="/api/auth")
 
@@ -80,6 +87,54 @@ def login(req: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     if user is None or not verify_password(req.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
+    return TokenResponse(access_token=create_access_token(user.id))
+
+
+@router.post("/google", response_model=TokenResponse)
+def google_login(req: GoogleAuthRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    """Google 登录/注册：验证 id_token → 按 google_sub / 邮箱查或建用户 → 签发本应用 JWT。
+    返回体与 register/login 完全一致（TokenResponse），前端可复用同一套「拿 token 收尾」逻辑。"""
+    try:
+        claims = verify_google_id_token(req.id_token)
+    except InvalidGoogleToken as exc:
+        # 验签失败/邮箱未验证：和其它认证失败一样统一返回 401。
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Google credential",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    google_sub = claims["sub"]
+    email = claims["email"]
+
+    # ① 已绑定过的 Google 账号：直接登录。
+    user = db.scalar(select(User).where(User.google_sub == google_sub))
+    if user is not None:
+        return TokenResponse(access_token=create_access_token(user.id))
+
+    # ② 未绑定：按邮箱找。命中已有（邮箱密码）账号则关联到它；否则新建一个纯 Google 账号
+    #    （password_hash=None，这类用户不能走密码登录，由 verify_password 的 None 守卫兜住）。
+    user = db.scalar(select(User).where(User.email == email))
+    if user is not None:
+        user.google_sub = google_sub
+    else:
+        user = User(email=email, google_sub=google_sub, password_hash=None)
+        db.add(user)
+
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        # 并发下另一请求可能已抢先为同一邮箱/同一 google_sub 建或绑了行，撞唯一索引。
+        # 回滚后按 google_sub 再查一次，正常能拿到那一行，据此登录。
+        db.rollback()
+        user = db.scalar(select(User).where(User.google_sub == google_sub))
+        if user is None:
+            raise HTTPException(
+                status_code=500, detail="Could not complete Google sign-in"
+            ) from exc
+        return TokenResponse(access_token=create_access_token(user.id))
+
+    db.refresh(user)  # 新建账号时取回数据库生成的 id
     return TokenResponse(access_token=create_access_token(user.id))
 
 

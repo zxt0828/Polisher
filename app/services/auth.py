@@ -18,9 +18,13 @@ def hash_password(plain_password: str) -> str:
     return hashed.decode("utf-8")
 
 
-def verify_password(plain_password: str, password_hash: str) -> bool:
+def verify_password(plain_password: str, password_hash: str | None) -> bool:
     """登录时核对明文密码和数据库里的 hash 是否匹配。
     bcrypt.checkpw 会从 hash 里读出当初的盐，重新算一遍再比对，匹配返回 True。"""
+    # 纯 Google 登录的用户 password_hash 为 None：他们没设过密码，
+    # 绝不能让密码登录路径通过（也避免 None.encode() 报错）。
+    if not password_hash:
+        return False
     return bcrypt.checkpw(plain_password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
