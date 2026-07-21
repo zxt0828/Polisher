@@ -60,48 +60,10 @@
   margin: 0 0 var(--space-5);
 }
 
-/* Continue with Google：描边胶囊款；本期禁用（Coming soon）。 */
-.auth-google {
+/* Continue with Google：容器负责把 Google 官方渲染的按钮居中。 */
+.auth-google-wrap {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.auth-google:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.auth-google__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-text);
-  color: var(--color-surface);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.auth-google__soon {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--color-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 /* 「or with email」：两侧细线夹一段灰字。 */

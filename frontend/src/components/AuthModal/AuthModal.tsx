@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { GoogleLogin } from '@react-oauth/google'
 import { ApiError } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import { Wordmark } from '../Wordmark'
@@ -15,7 +16,7 @@ type Mode = 'login' | 'signup'
 // 登录/注册弹窗：一个屏幕正中的浮层，login/signup 两种模式共用一套输入框，
 // 底部链接互相切换。两者都直接打通后端（useAuth 里的 login/register）。
 export function AuthModal({ open, onClose }: AuthModalProps) {
-  const { login, register } = useAuth()
+  const { login, register, loginWithGoogle } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -90,14 +91,29 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             : 'Sign up to save and manage your résumés.'}
         </p>
 
-        {/* Google 登录本期不接：画出按钮但禁用，标 Coming soon。 */}
-        <button type="button" className="auth-google" disabled title="Coming soon">
-          <span className="auth-google__icon" aria-hidden="true">
-            G
-          </span>
-          Continue with Google
-          <span className="auth-google__soon">Coming soon</span>
-        </button>
+        {/* Google 官方渲染的登录按钮：成功回调给 credential（即 id_token），
+            交给 loginWithGoogle 换本应用 token 并收尾；失败则展示错误。 */}
+        <div className="auth-google-wrap">
+          <GoogleLogin
+            onSuccess={(cred) => {
+              if (!cred.credential) {
+                setError('Google sign-in failed. Please try again.')
+                return
+              }
+              setError(null)
+              loginWithGoogle(cred.credential)
+                .then(onClose)
+                .catch((err) => {
+                  setError(
+                    err instanceof ApiError
+                      ? err.message
+                      : 'Google sign-in failed. Please try again.',
+                  )
+                })
+            }}
+            onError={() => setError('Google sign-in failed. Please try again.')}
+          />
+        </div>
 
         <div className="auth-divider">
           <span>or with email</span>

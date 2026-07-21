@@ -24,6 +24,12 @@ export function loginAccount(email: string, password: string): Promise<TokenResp
   return postJson<TokenResponse>('/api/auth/login', { email, password })
 }
 
+// Google 登录：把 Google 返回的 id_token 交给后端验签，换回本应用的 TokenResponse。
+// 返回体与注册/登录一致，前端拿到即可复用同一套「拿 token 收尾」逻辑。
+export function googleAuth(idToken: string): Promise<TokenResponse> {
+  return postJson<TokenResponse>('/api/auth/google', { id_token: idToken })
+}
+
 // 需要携带 Authorization 头；token 由 client.ts 的 setAuthToken 统一注入。
 export function fetchMe(): Promise<UserOut> {
   return getJson<UserOut>('/api/auth/me')

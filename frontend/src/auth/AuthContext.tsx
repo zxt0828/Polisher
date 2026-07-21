@@ -5,7 +5,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { setAuthToken } from '../api/client'
-import { fetchMe, loginAccount, registerAccount } from '../api/auth'
+import { fetchMe, googleAuth, loginAccount, registerAccount } from '../api/auth'
 import type { UserOut } from '../api/auth'
 
 // token 存 localStorage 的 key。取个带项目名的前缀，避免和同域其它应用撞。
@@ -19,6 +19,7 @@ interface AuthContextValue {
   status: AuthStatus
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
+  loginWithGoogle: (idToken: string) => Promise<void>
   logout: () => void
 }
 
@@ -84,6 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await completeAuth(access_token)
   }
 
+  // Google 登录：拿前端从 Google 得到的 id_token 换回本应用 token，再走同一套收尾。
+  async function loginWithGoogle(idToken: string): Promise<void> {
+    const { access_token } = await googleAuth(idToken)
+    await completeAuth(access_token)
+  }
+
   function logout(): void {
     persistToken(null)
     setUser(null)
@@ -91,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, status, login, register, logout }),
+    () => ({ user, status, login, register, loginWithGoogle, logout }),
     [user, status],
   )
 
